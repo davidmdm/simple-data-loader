@@ -12,18 +12,24 @@ module.exports = function simpleLoader(fn, opts = {}) {
 
   const cache = new Map();
 
-  return function loader(key) {
-    if (cache.has(key)) {
-      return cache.get(key);
-    }
+  return {
+    load(key) {
+      if (cache.has(key)) {
+        return cache.get(key);
+      }
 
-    const promise = Promise.resolve(fn(key));
-    cache.set(key, promise);
+      const promise = Promise.resolve(fn(key));
+      cache.set(key, promise);
 
-    if (opts.ttl && Number.isInteger(opts.ttl)) {
-      setTimeout(() => cache.delete(key), opts.ttl);
-    }
+      if (opts.ttl && Number.isInteger(opts.ttl)) {
+        setTimeout(() => cache.delete(key), opts.ttl);
+      }
 
-    return promise;
+      return promise;
+    },
+
+    delete(key) {
+      return cache.delete(key);
+    },
   };
 };
