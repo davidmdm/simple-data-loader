@@ -12,7 +12,7 @@ npm install simple-data-loader --save
 
 ## Examples
 
-use case: Sending file on disk to a legacy api as json:
+caching resources
 
 ```javascript
 const dataloader = require('simple-data-loader');
