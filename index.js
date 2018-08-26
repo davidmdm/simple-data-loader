@@ -11,6 +11,7 @@ module.exports = function simpleLoader(fn, opts = {}) {
   }
 
   const cache = new Map();
+  const timeouts = new Map();
 
   return {
     load(key) {
@@ -22,13 +23,23 @@ module.exports = function simpleLoader(fn, opts = {}) {
       cache.set(key, promise);
 
       if (opts.ttl && Number.isInteger(opts.ttl)) {
-        setTimeout(() => cache.delete(key), opts.ttl);
+        timeouts.set(
+          key,
+          setTimeout(() => {
+            cache.delete(key);
+            timeouts.delete(key);
+          }, opts.ttl)
+        );
       }
 
       return promise;
     },
 
     delete(key) {
+      if (timeouts.has(key)) {
+        clearTimeout(timeouts.get(key));
+        timeouts.delete(key);
+      }
       return cache.delete(key);
     },
   };

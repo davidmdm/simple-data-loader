@@ -1,12 +1,21 @@
 {
   "name": "simple-data-loader",
-  "version": "0.1.0",
-  "description": "",
+  "version": "0.1.1",
+  "description": "Caches function results by key for specified time or indefintiy",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "MIT"
+  "keywords": [
+    "cache",
+    "promise",
+    "promise-cache",
+    "loader"
+  ],
+  "author": "David Desmarais-Michaud",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davidmdm/simple-data-loader"
+  }
 }
