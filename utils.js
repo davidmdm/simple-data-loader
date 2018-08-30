@@ -1,5 +1,5 @@
 const set = (cache, keys, result) => {
-  if (keys.length === 1) {
+  if (keys.length <= 1) {
     return cache.set(keys[0], result);
   }
   if (!cache.has(keys[0])) {
@@ -10,7 +10,7 @@ const set = (cache, keys, result) => {
 };
 
 const has = (cache, keys) => {
-  if (keys.length === 1) {
+  if (keys.length <= 1) {
     return cache.has(keys[0]);
   }
   if (!cache.has(keys[0])) {
@@ -21,7 +21,7 @@ const has = (cache, keys) => {
 };
 
 const get = (cache, keys) => {
-  if (keys.length === 1) {
+  if (keys.length <= 1) {
     return cache.get(keys[0]);
   }
   const nextCache = cache.get(keys[0]);
@@ -29,7 +29,7 @@ const get = (cache, keys) => {
 };
 
 const del = (cache, keys) => {
-  if (keys.length === 1) {
+  if (keys.length <= 1) {
     return cache.delete(keys[0]);
   }
   if (!cache.has(keys[0])) {
