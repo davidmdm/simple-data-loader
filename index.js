@@ -5,7 +5,7 @@ const { set, has, get, del } = require('./utils');
 module.exports = function dataloader(fn, opts = {}) {
   if (typeof fn === 'object') {
     opts = fn;
-    fn = opts.fn;
+    fn = opts.load;
   }
 
   if (typeof fn !== 'function') {
