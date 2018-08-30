@@ -1,9 +1,11 @@
 'use strict';
 
-module.exports = function simpleLoader(fn, opts = {}) {
+const { set, has, get, del } = require('./utils');
+
+module.exports = function dataloader(fn, opts = {}) {
   if (typeof fn === 'object') {
     opts = fn;
-    fn = opts.fn;
+    fn = opts.load;
   }
 
   if (typeof fn !== 'function') {
@@ -13,34 +15,39 @@ module.exports = function simpleLoader(fn, opts = {}) {
   const cache = new Map();
   const timeouts = new Map();
 
+  const arity = fn.length;
+
   return {
-    load(key) {
-      if (cache.has(key)) {
-        return cache.get(key);
+    load(...args) {
+      const keys = args.slice(0, arity);
+
+      if (has(cache, keys)) {
+        return get(cache, keys);
       }
 
-      const promise = Promise.resolve(fn(key));
-      cache.set(key, promise);
+      const promise = Promise.resolve(fn(...keys));
+      set(cache, keys, promise);
 
       if (opts.ttl && Number.isInteger(opts.ttl)) {
-        timeouts.set(
-          key,
+        set(
+          timeouts,
+          keys,
           setTimeout(() => {
-            cache.delete(key);
-            timeouts.delete(key);
+            del(cache, keys);
+            del(timeouts, keys);
           }, opts.ttl)
         );
       }
-
       return promise;
     },
 
-    delete(key) {
-      if (timeouts.has(key)) {
-        clearTimeout(timeouts.get(key));
-        timeouts.delete(key);
+    delete(...args) {
+      const keys = args.slice(0, arity);
+      if (has(timeouts, keys)) {
+        clearTimeout(get(timeouts, keys));
+        del(timeouts, keys);
       }
-      return cache.delete(key);
+      return del(cache, keys);
     },
   };
 };
