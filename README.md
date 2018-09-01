@@ -55,9 +55,9 @@ bookPromise1 === bookPromise2; // true
 
 bookLoader.delete('the old man and the sea', 'en', 1951);
 
-const bookPromise3 = bookLoader.load('the old man and the sea', 'en', 1951)
+const bookPromise3 = bookLoader.load('the old man and the sea', 'en', 1951);
 
-bookPromise1 === bookPromise3 // false
+bookPromise1 === bookPromise3; // false
 ```
 
 Optionally one can choose to pass the loader function as part of the options object.
@@ -74,14 +74,45 @@ const myLoader = dataloader({
 });
 ```
 
+By default simple-data-loader will not hash non-primitive types. This can be changed by setting the hash option
+to true. Fair warning the hash function is a simple deterministic version of JSON.stringify therefore caching using
+large objects or function definitions as arguments can be memory and computationally intensive. Use carefully.
+
+For simple cases with functions that use option style objects this can be quite useful.
+
+```javascript
+const dataloader = require('simple-data-loader');
+
+function getListOfBooks(query, opts) {
+  // your implementation
+}
+
+const loader = dataloader(getListOfBooks);
+
+const promise1 = loader.load('hemingway', { limit: 5, sortBy: 'name' });
+const promise2 = loader.load('hemingway', { limit: 5, sortBy: 'name' });
+
+promise1 === promise2; // false, since although equal the two option objects are not the same reference
+
+const hashLoader = dataloader(getListOfBooks, { hash: true });
+
+const promise3 = loader.load('hemingway', { sortBy: 'name', limit: 5 });
+const promise4 = loader.load('hemingway', { limit: 5, sortBy: 'name' });
+
+promise3 === promise4 // true, the options objects needs only be equal. Key ordering does not matter
+
+```
+
 Supported options:
 
-- load
-- ttl
+- load  (function => the loading function)
+- ttl   (number => the time to live for cached items, if not provided will cache indefinitely unless programatically removed)
+- hash  (boolean => enables hashing ie. a determinstic Stringify, and allows for non primitive type arguments)
 
 ## Run the tests
 
 from the package root run:
+
 ```
 npm install
 npm run test
