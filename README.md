@@ -1,12 +1,19 @@
 # simple-data-loader
 
-Simple dataloader that caches the return of a function as a promise.
-Supports simple cache invalidation via timeouts. Very simple, helps with performance and
-rate limiting. No externeral dependencies.
+## Introduction
 
-Heavily inspired by facebooks dataloader, but supports multi argument functions and non-primitive arguments.
+simple-data-loader lets you cache a function's return value as a promise.
+It supports simple cache invalidation via timeouts in a minimal and dependency-free manner.
+It supports multi-argument functions and non-primitive arguments, and can be used for rate limiting.
 
-### Installing
+simple-data-loader is heavily inspired by facebooks dataloader package and its api. However unlike 
+facebooks dataloader, it places no emphasis on batching and as such allows for greater flexibility 
+in selecting a loading function specific to your use-case.
+
+It is designed to be simple, noise-free, have no external dependencies, and overall easy to use.
+
+
+## Installing
 
 ```
 npm install simple-data-loader --save
@@ -93,8 +100,8 @@ function getListOfBooks(query, opts) {
 
 const loader = dataloader(getListOfBooks);
 
-const promise1 = loader.load('hemingway', { limit: 5, sortBy: 'name' });
-const promise2 = loader.load('hemingway', { limit: 5, sortBy: 'name' });
+const promise1 = loader.load('hemingway', { limit: 5, sortBy: 'title' });
+const promise2 = loader.load('hemingway', { limit: 5, sortBy: 'title' });
 
 promise1 === promise2; // false, since although equal the two option objects are not the same reference
 
