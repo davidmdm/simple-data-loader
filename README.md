@@ -80,6 +80,8 @@ large objects or function definitions as arguments can be memory and computation
 
 For simple cases with functions that use option style objects this can be quite useful.
 
+**WARNING**  <span style="color: darkred; margin-left: 5px">Circular objects will cause an infinite loop and eat all memory until the process crashes. Use hashing with care.</span>
+
 ```javascript
 const dataloader = require('simple-data-loader');
 
