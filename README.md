@@ -1,8 +1,10 @@
 # simple-data-loader
 
-Simple dataloader that caches the return of a function as a promise to a key.
-Supports simple cache invalidation via timeout. Very simple, helps with performance and
-rate limiting. No exteneral dependencies.
+Simple dataloader that caches the return of a function as a promise.
+Supports simple cache invalidation via timeouts. Very simple, helps with performance and
+rate limiting. No externeral dependencies.
+
+Heavily inspired by facebooks dataloader, but supports multi argument functions and non-primitive arguments.
 
 ### Installing
 
