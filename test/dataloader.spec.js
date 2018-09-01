@@ -125,4 +125,92 @@ describe('dataloader', () => {
       expect(p2 === p4).to.be.true;
     });
   });
+
+  describe('hash', () => {
+    const fn = obj => Math.random();
+    const loader = dataloader(fn, { hash: true });
+
+    it('should be able to cache with non primitive arguments', () => {
+      const p1 = loader.load({
+        opt1: 'first option',
+        opt2: 'second option',
+        opt3: 'third option',
+      });
+
+      const p2 = loader.load({
+        opt3: 'third option',
+        opt2: 'second option',
+        opt1: 'first option',
+      });
+
+      const p3 = loader.load({
+        opt3: 'third option',
+        opt2: 'second option',
+        opt1: 'first option',
+        opt0: 'extra option',
+      });
+
+      expect(p1 === p2).to.be.true;
+      expect(p2 === p3).to.be.false;
+    });
+
+    it('should cache using arrays, functions, numbers, booleans', () => {
+      const getFive = () => 5;
+
+      const p1 = loader.load({
+        string: 'text',
+        boolean: true,
+        number: 3.14159265,
+        fn: getFive,
+      });
+
+      const p2 = loader.load({
+        fn: getFive,
+        number: 3.14159265,
+        string: 'text',
+        boolean: true,
+      });
+      expect(p1 === p2).to.be.true;
+    });
+
+    it('should cache using non primitive types - arity > 1', () => {
+      const loader = dataloader((a, b) => Math.random(), { hash: true });
+
+      const func = function() {};
+
+      const obj1 = {
+        hash: 'works!',
+        inner: {
+          arr: [
+            {
+              can: 'hold',
+              even: func,
+            },
+          ],
+        },
+      };
+
+      const obj2 = [obj1, dataloader];
+
+      const p1 = loader.load(obj1, obj2);
+
+      const obj3 = {
+        inner: {
+          arr: [
+            {
+              even: func,
+              can: 'hold',
+            },
+          ],
+        },
+        hash: 'works!',
+      };
+
+      const obj4 = [...obj2];
+
+      const p2 = loader.load(obj3, obj4);
+
+      expect(p1 === p2).to.be.true;
+    });
+  });
 });
