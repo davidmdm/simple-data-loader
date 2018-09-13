@@ -1,6 +1,6 @@
 {
   "name": "simple-data-loader",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Caches function results by key for specified time or indefintiy",
   "main": "index.js",
   "scripts": {
