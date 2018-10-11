@@ -32,14 +32,14 @@ function getResource(id) {
 
 const resouceLoader = dataloader(getResource, { ttl: 5000 });
 
-const resourcePromise = resourceLoader.load('resourceID');
+const resourcePromise = resourceLoader('resourceID');
 
 // await or the handle promise as you will.
 // However resulted promise is cached for key `resourceID` for the next 5000 milliseconds
 
 // If however you want to invalidate a key programitically you can:
 resourceLoader.delete('resourceId');
-resourceLoader.load('resourceId'); // will generate a new request for the underlying resource and cache it.
+resourceLoader('resourceId'); // will generate a new request for the underlying resource and cache it.
 ```
 
 simple-data-loader can also be used to cache functions that have multiple arguments.
@@ -57,14 +57,14 @@ function getBook(title, language, year) {
 
 const bookLoader = dataloader(getBook);
 
-const bookPromise1 = bookLoader.load('the old man and the sea', 'en', 1951);
-const bookPromise2 = bookLoader.load('the old man and the sea', 'en', 1951);
+const bookPromise1 = bookLoader('the old man and the sea', 'en', 1951);
+const bookPromise2 = bookLoader('the old man and the sea', 'en', 1951);
 
 bookPromise1 === bookPromise2; // true
 
 bookLoader.delete('the old man and the sea', 'en', 1951);
 
-const bookPromise3 = bookLoader.load('the old man and the sea', 'en', 1951);
+const bookPromise3 = bookLoader('the old man and the sea', 'en', 1951);
 
 bookPromise1 === bookPromise3; // false
 ```
@@ -100,15 +100,15 @@ function getListOfBooks(query, opts) {
 
 const loader = dataloader(getListOfBooks);
 
-const promise1 = loader.load('hemingway', { limit: 5, sortBy: 'title' });
-const promise2 = loader.load('hemingway', { limit: 5, sortBy: 'title' });
+const promise1 = loader('hemingway', { limit: 5, sortBy: 'title' });
+const promise2 = loader('hemingway', { limit: 5, sortBy: 'title' });
 
 promise1 === promise2; // false, since although equal the two option objects are not the same reference
 
 const hashLoader = dataloader(getListOfBooks, { hash: true });
 
-const promise3 = loader.load('hemingway', { sortBy: 'name', limit: 5 });
-const promise4 = loader.load('hemingway', { limit: 5, sortBy: 'name' });
+const promise3 = loader('hemingway', { sortBy: 'name', limit: 5 });
+const promise4 = loader('hemingway', { limit: 5, sortBy: 'name' });
 
 promise3 === promise4 // true, the options objects needs only be equal. Key ordering does not matter
 
