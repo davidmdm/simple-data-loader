@@ -213,4 +213,26 @@ describe('dataloader', () => {
       expect(p1 === p2).to.be.true;
     });
   });
+
+  describe('rejected promise', () => {
+    const loader = dataloader(x => (x % 2 === 0 ? Promise.resolve(x) : Promise.reject(x)));
+
+    it('should not cache a rejected promise', async () => {
+      const resolved1 = loader.load(0);
+      await resolved1;
+      const resolved2 = loader.load(0);
+      expect(resolved1 === resolved2).to.be.true;
+
+      const rejected = loader.load(1);
+      const rejected2 = loader.load(1);
+
+      expect(rejected === rejected2).to.be.true;
+
+      await rejected.catch(() => {});
+      const rejected3 = loader.load(1);
+
+      expect(rejected === rejected3).to.be.false;
+      rejected3.catch(() => {});
+    });
+  });
 });

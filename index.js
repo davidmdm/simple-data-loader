@@ -31,7 +31,17 @@ module.exports = function dataloader(fn, opts = {}) {
         return get(cache, keys);
       }
 
-      const promise = Promise.resolve(fn(...fnArgs));
+      const promise = Promise.resolve()
+        .then(() => fn(...fnArgs))
+        .catch(err => {
+          if (has(cache, keys)) del(cache, keys);
+          if (has(timeouts, keys)) {
+            clearTimeout(get(timeouts, keys));
+            del(timeouts, keys);
+          }
+          return Promise.reject(err);
+        });
+
       set(cache, keys, promise);
 
       if (opts.ttl && Number.isInteger(opts.ttl)) {
