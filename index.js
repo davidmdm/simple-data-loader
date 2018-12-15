@@ -1,6 +1,6 @@
 'use strict';
 
-const { set, has, get, del } = require('./utils');
+const { set, has, get, del, shift } = require('./utils');
 
 module.exports = function dataloader(fn, opts = {}) {
   if (typeof fn === 'object') {
@@ -18,9 +18,19 @@ module.exports = function dataloader(fn, opts = {}) {
 
   const cache = new Map();
   const timeouts = new Map();
+  const argSet = new Set();
 
   const arity = fn.length;
   const hashfn = opts.hash === true ? require('./hash') : x => x;
+
+  const loaderDelete = (...args) => {
+    const keys = args.slice(0, arity).map(hashfn);
+    if (has(timeouts, keys)) {
+      clearTimeout(get(timeouts, keys));
+      del(timeouts, keys);
+    }
+    return del(cache, keys);
+  };
 
   const loader = (...args) => {
     const fnArgs = args.slice(0, arity);
@@ -42,6 +52,11 @@ module.exports = function dataloader(fn, opts = {}) {
       });
 
     set(cache, keys, promise);
+    if (argSet.size === opts.max) {
+      shift(argSet);
+      loaderDelete(...argSet);
+    }
+    argSet.add(keys);
 
     if (opts.ttl && Number.isInteger(opts.ttl)) {
       set(
@@ -54,17 +69,9 @@ module.exports = function dataloader(fn, opts = {}) {
       );
     }
     return promise;
-  }
+  };
 
-  loader.delete = (...args) => {
-    const keys = args.slice(0, arity).map(hashfn);
-    if (has(timeouts, keys)) {
-      clearTimeout(get(timeouts, keys));
-      del(timeouts, keys);
-    }
-    return del(cache, keys);
-  }
+  loader.delete = loaderDelete;
 
   return loader;
-  
 };
