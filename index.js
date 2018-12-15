@@ -49,7 +49,7 @@ module.exports = function dataloader(fn, opts = {}) {
     return result;
   };
 
-  const invalidate = (...keys) => {
+  const invalidate = keys => {
     if (has(timeouts, keys)) {
       clearTimeout(get(timeouts, keys));
       del(timeouts, keys);
@@ -68,7 +68,7 @@ module.exports = function dataloader(fn, opts = {}) {
     const promise = Promise.resolve()
       .then(() => fn(...fnArgs))
       .catch(err => {
-        invalidate(...keys);
+        invalidate(keys);
         return Promise.reject(err);
       });
 
@@ -76,7 +76,7 @@ module.exports = function dataloader(fn, opts = {}) {
     if (opts.max) {
       const overflow = enqueue(keys);
       if (overflow) {
-        invalidate(...overflow);
+        invalidate(overflow);
       }
     }
 
@@ -93,7 +93,7 @@ module.exports = function dataloader(fn, opts = {}) {
     return promise;
   };
 
-  loader.delete = (...args) => invalidate(...sanitizeArgs(args).map(hashfn));
+  loader.delete = (...args) => invalidate(sanitizeArgs(args).map(hashfn));
 
   return loader;
 };
