@@ -4,7 +4,8 @@
   "description": "Caches function results by key for specified time or indefintiy",
   "main": "index.js",
   "scripts": {
-    "test": "mocha ./test/dataloader.spec.js"
+    "test": "mocha ./test/dataloader.spec.js",
+    "coverage": "nyc mocha ./test/dataloader.spec.js"
   },
   "keywords": [
     "cache",
@@ -19,7 +20,24 @@
     "url": "https://github.com/davidmdm/simple-data-loader"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
-    "mocha": "^5.2.0"
+    "mocha": "^5.2.0",
+    "nyc": "^13.1.0"
+  },
+  "nyc": {
+    "include": [
+      "**/*.js"
+    ],
+    "exclude": [
+      "node_modules"
+    ],
+    "extension": [
+      ".js"
+    ],
+    "reporter": [
+      "html",
+      "text"
+    ],
+    "sourceMap": true,
+    "instrument": true
   }
 }
