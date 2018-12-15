@@ -1,7 +1,6 @@
 'use strict';
 
-const { expect } = require('chai');
-
+const assert = require('assert');
 const dataloader = require('../index');
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -21,8 +20,8 @@ describe('dataloader', () => {
 
       const p3 = loader();
 
-      expect(p1 === p2).to.be.true;
-      expect(p1 === p3).to.be.false;
+      assert.strictEqual(p1, p2);
+      assert.notStrictEqual(p1, p3);
     });
   });
 
@@ -33,7 +32,7 @@ describe('dataloader', () => {
       const loader = dataloader(fn);
       const p1 = loader();
       const p2 = loader();
-      expect(p1 === p2).to.be.true;
+      assert.strictEqual(p1, p2);
     });
 
     it('should invalidate cache after timeout', async () => {
@@ -43,7 +42,7 @@ describe('dataloader', () => {
       await sleep(200);
       const p2 = loader();
 
-      expect(p1 === p2).to.be.false;
+      assert.notStrictEqual(p1, p2);
     });
   });
 
@@ -56,13 +55,14 @@ describe('dataloader', () => {
       const p2 = loader(1);
       const p3 = loader(2);
 
-      expect(p1 === p2).to.be.true;
-      expect(p1 === p3).to.be.false;
+      assert.strictEqual(p1, p2);
+      assert.notStrictEqual(p1, p3);
 
       const val1and2 = await p1;
-      expect(val1and2).to.equal(10);
+      assert.equal(val1and2, 10);
+
       const val3 = await p3;
-      expect(val3).to.equal(20);
+      assert.equal(val3, 20);
     });
 
     it('should invalidate cache after timeout', async () => {
@@ -72,7 +72,7 @@ describe('dataloader', () => {
       await sleep(200);
       const p2 = loader();
 
-      expect(p1 === p2).to.be.false;
+      assert.notStrictEqual(p1, p2);
     });
   });
 
@@ -85,14 +85,14 @@ describe('dataloader', () => {
       const p2 = loader(1, 2, 3);
       const p3 = loader(4, 5, 6);
 
-      expect(p1 === p2).to.be.true;
-      expect(p1 === p3).to.be.false;
+      assert.strictEqual(p1, p2);
+      assert.notStrictEqual(p1, p3);
 
       const val1and2 = await p1;
       const val3 = await p3;
 
-      expect(val1and2).to.equal(6);
-      expect(val3).to.equal(120);
+      assert.equal(val1and2, 6);
+      assert.equal(val3, 120);
     });
 
     it('should invalidate cache after timeout', async () => {
@@ -105,8 +105,8 @@ describe('dataloader', () => {
 
       const p3 = loader(1, 2, 3);
 
-      expect(p1 === p2).to.be.true;
-      expect(p1 === p3).to.be.false;
+      assert.strictEqual(p1, p2);
+      assert.notStrictEqual(p1, p3);
     });
 
     it('should invalidate cached key combination should not affect other similar combinations', async () => {
@@ -121,8 +121,8 @@ describe('dataloader', () => {
       const p3 = loader(1, 2, 3);
       const p4 = loader(1, 2, 4);
 
-      expect(p1 === p3).to.be.false;
-      expect(p2 === p4).to.be.true;
+      assert.notStrictEqual(p1, p3);
+      assert.strictEqual(p2, p4);
     });
   });
 
@@ -150,8 +150,8 @@ describe('dataloader', () => {
         opt0: 'extra option',
       });
 
-      expect(p1 === p2).to.be.true;
-      expect(p2 === p3).to.be.false;
+      assert.strictEqual(p1, p2);
+      assert.notStrictEqual(p1, p3);
     });
 
     it('should cache using arrays, functions, numbers, booleans', () => {
@@ -170,7 +170,7 @@ describe('dataloader', () => {
         string: 'text',
         boolean: true,
       });
-      expect(p1 === p2).to.be.true;
+      assert.strictEqual(p1, p2);
     });
 
     it('should cache using non primitive types - arity > 1', () => {
@@ -210,7 +210,7 @@ describe('dataloader', () => {
 
       const p2 = loader(obj3, obj4);
 
-      expect(p1 === p2).to.be.true;
+      assert.strictEqual(p1, p2);
     });
   });
 
@@ -221,18 +221,76 @@ describe('dataloader', () => {
       const resolved1 = loader(0);
       await resolved1;
       const resolved2 = loader(0);
-      expect(resolved1 === resolved2).to.be.true;
+      assert.strictEqual(resolved1, resolved2);
 
       const rejected = loader(1);
       const rejected2 = loader(1);
 
-      expect(rejected === rejected2).to.be.true;
+      assert.strictEqual(rejected, rejected2);
 
       await rejected.catch(() => {});
       const rejected3 = loader(1);
 
-      expect(rejected === rejected3).to.be.false;
+      assert.notStrictEqual(rejected, rejected3);
       rejected3.catch(() => {});
+    });
+  });
+
+  describe('max option', () => {
+    it('should remove least recently used from cache after max is reached', () => {
+      const loader = dataloader(x => x, { max: 3 });
+      const p1 = loader(1);
+      loader(2);
+      loader(3);
+      loader(4); // Should invalidate 1
+      const p2 = loader(1);
+
+      assert.notStrictEqual(p1, p2);
+    });
+
+    it('should remove least recently used from cache after max is reached - multi args', () => {
+      const loader = dataloader((x, y) => x + y, { max: 3 });
+      const p1 = loader(1, 1);
+      loader(2, 2);
+      loader(3, 3);
+      loader(4, 4); // Should invalidate (1,1)
+      const p2 = loader(1, 1);
+
+      assert.notStrictEqual(p1, p2);
+    });
+
+    it('should not fill queue if element already exists', () => {
+      const loader = dataloader(x => x, { max: 3 });
+      const p1 = loader(1);
+      loader(1);
+      loader(1);
+      loader(1);
+      loader(1);
+      const p2 = loader(1);
+
+      assert.strictEqual(p1, p2);
+    });
+  });
+
+  describe('Internal - key uniqueness', () => {
+    it('should differentiate when beginning arguments are the same but incomplete', async () => {
+      const loader = dataloader((x, y, z) => '' + x + y + z);
+      const p1 = loader(1, 2, 3);
+      const p2 = loader(1, 2);
+      const p3 = loader(1, 2, 3);
+      assert.notStrictEqual(p1, p2);
+      assert.strictEqual(p1, p3);
+
+      assert.equal(await p1, '123');
+      assert.equal(await p2, '12undefined');
+      assert.equal(await p3, '123');
+    });
+
+    it('should match undefined and missing arguments', () => {
+      const loader = dataloader((x, y, z, w, r) => {});
+      const p1 = loader(1, undefined, 3, undefined, undefined);
+      const p2 = loader(1, undefined, 3);
+      assert.strictEqual(p1, p2);
     });
   });
 });

@@ -43,17 +43,9 @@ const del = (cache, keys) => {
   return res;
 };
 
-const shift = set => {
-  for (const elem of set) {
-    set.delete(elem);
-    return elem;
-  }
-};
-
 module.exports = {
   set,
   has,
   get,
   del,
-  shift,
 };

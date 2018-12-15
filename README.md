@@ -6,12 +6,11 @@ simple-data-loader lets you cache a function's return value as a promise.
 It supports simple cache invalidation via timeouts in a minimal and dependency-free manner.
 It supports multi-argument functions and non-primitive arguments, and can be used for rate limiting.
 
-simple-data-loader is heavily inspired by facebooks dataloader package and its api. However unlike 
-facebooks dataloader, it places no emphasis on batching and as such allows for greater flexibility 
+simple-data-loader is heavily inspired by facebooks dataloader package and its api. However unlike
+facebooks dataloader, it places no emphasis on batching and as such allows for greater flexibility
 in selecting a loading function specific to your use-case.
 
 It is designed to be simple, noise-free, have no external dependencies, and overall easy to use.
-
 
 ## Installing
 
@@ -89,7 +88,7 @@ large objects or function definitions as arguments can be memory and computation
 
 For simple cases with functions that use option style objects this can be quite useful.
 
-**WARNING**  <span style="color: darkred; margin-left: 5px">Circular objects will cause an infinite loop and eat all memory until the process crashes. Use hashing with care.</span>
+**WARNING** <span style="color: darkred; margin-left: 5px">Circular objects will cause an infinite loop and eat all memory until the process crashes. Use hashing with care.</span>
 
 ```javascript
 const dataloader = require('simple-data-loader');
@@ -110,15 +109,31 @@ const hashLoader = dataloader(getListOfBooks, { hash: true });
 const promise3 = loader('hemingway', { sortBy: 'name', limit: 5 });
 const promise4 = loader('hemingway', { limit: 5, sortBy: 'name' });
 
-promise3 === promise4 // true, the options objects needs only be equal. Key ordering does not matter
+promise3 === promise4; // true, the options objects needs only be equal. Key ordering does not matter
+```
 
+The max option can be passed to set a limit on the number of items that you want to cache. If a limit is set items will be evicted
+using the least recently used principle.
+
+```javascript
+const dataloader = require('simple-data-loader');
+
+const loader = dataloader(x => x, { max: 3 });
+loader(1);
+const promise2 = loader(2);
+loader(1);
+loader(3);
+loader(4); // At this point "2" shall be evicted from the cache as it was the least recently used
+const anotherPromise2 = loader(2);
+
+promise2 === anotherPromise2; // false, this is not the same promise.
 ```
 
 Supported options:
 
-- load  (function => the loading function)
-- ttl   (number => the time to live for cached items, if not provided will cache indefinitely unless programatically removed)
-- hash  (boolean => enables hashing ie. a determinstic Stringify, and allows for non primitive type arguments)
+- load (function => the loading function)
+- ttl (number => the time to live for cached items, if not provided will cache indefinitely unless programatically removed)
+- hash (boolean => enables hashing ie. a determinstic Stringify, and allows for non primitive type arguments)
 
 ## Run the tests
 
