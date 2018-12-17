@@ -1,6 +1,6 @@
 'use strict';
 
-function createQueue(max, comparer) {
+function LRUQueue(max, comparer) {
   const queue = {
     head: null,
     tail: null,
@@ -68,4 +68,4 @@ function createQueue(max, comparer) {
   return { enqueue };
 }
 
-module.exports = { createQueue };
+module.exports = { LRUQueue };

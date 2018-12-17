@@ -1,7 +1,7 @@
 'use strict';
 
 const { set, has, get, del } = require('./utils');
-const { createQueue } = require('./queue');
+const { LRUQueue } = require('./queue');
 
 module.exports = function dataloader(fn, opts = {}) {
   if (typeof fn === 'object') {
@@ -23,19 +23,17 @@ module.exports = function dataloader(fn, opts = {}) {
 
   const cache = new Map();
   const timeouts = new Map();
-  const { enqueue } = opts.max
-    ? createQueue(opts.max, (a, b) => {
-        if (a.length !== b.length) {
-          return false;
-        }
-        for (let i = 0; i < a.length; i++) {
-          if (a[i] !== b[i]) {
-            return false;
-          }
-        }
-        return true;
-      })
-    : { enqueue: () => {} };
+  const { enqueue } = LRUQueue(opts.max, (a, b) => {
+    if (a.length !== b.length) {
+      return false;
+    }
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) {
+        return false;
+      }
+    }
+    return true;
+  });
 
   const arity = fn.length;
   const hashfn = opts.hash === true ? require('./hash') : x => x;
