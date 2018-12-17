@@ -61,6 +61,13 @@ module.exports = function dataloader(fn, opts = {}) {
     const fnArgs = sanitizeArgs(args);
     const keys = fnArgs.map(hashfn);
 
+    if (opts.max) {
+      const overflow = enqueue(keys);
+      if (overflow) {
+        invalidate(overflow);
+      }
+    }
+
     if (has(cache, keys)) {
       return get(cache, keys);
     }
@@ -73,12 +80,6 @@ module.exports = function dataloader(fn, opts = {}) {
       });
 
     set(cache, keys, promise);
-    if (opts.max) {
-      const overflow = enqueue(keys);
-      if (overflow) {
-        invalidate(overflow);
-      }
-    }
 
     if (opts.ttl && Number.isInteger(opts.ttl)) {
       set(

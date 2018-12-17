@@ -237,6 +237,16 @@ describe('dataloader', () => {
   });
 
   describe('max option', () => {
+    it('should continue to return the same promise even when adding more than the max but of the same elem.', () => {
+      const loader = dataloader(x => x, { max: 3 });
+      const p1 = loader(1);
+      loader(1);
+      loader(1);
+      const p4 = loader(1);
+
+      assert.strictEqual(p1, p4);
+    });
+
     it('should remove least recently used from cache after max is reached', () => {
       const loader = dataloader(x => x, { max: 3 });
       const p1 = loader(1);

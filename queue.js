@@ -34,7 +34,7 @@ function createQueue(max, comparer) {
       }
     }
 
-    if (match && queue.length > 1) {
+    if (match) {
       if (match === queue.head) {
         return;
       }
