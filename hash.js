@@ -6,16 +6,20 @@ const hash = item => {
   }
 
   if (typeof item === 'object') {
+    const hashObject = {};
     for (const key in item) {
-      item[key] = hash(item[key]);
+      hashObject[key] = hash(item[key]);
     }
 
-    const sortedObject = Object.getOwnPropertyNames(item)
+    const sortedObject = Object.getOwnPropertyNames(hashObject)
       .sort()
-      .reduce((acc, name) => {
-        acc[name] = item[name];
-        return acc;
-      }, Array.isArray(item) ? [] : {});
+      .reduce(
+        (acc, name) => {
+          acc[name] = hashObject[name];
+          return acc;
+        },
+        Array.isArray(item) ? [] : {}
+      );
 
     return JSON.stringify(sortedObject);
   }
