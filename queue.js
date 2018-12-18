@@ -38,12 +38,13 @@ function LRUQueue(max, comparer) {
       if (match === queue.head) {
         return;
       }
-      if (match === queue.tail) {
-        queue.tail = queue.tail.next;
-      }
       match.next.prev = match.prev;
-      match.prev = queue.head;
+      if (match === queue.tail) {
+        queue.tail = match.next;
+      }
       match.next = null;
+      queue.head.next = match;
+      match.prev = queue.head;
       queue.head = match;
       return;
     }
