@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('assert');
-const dataloader = require('../index');
+const dataloader = require('../src/index');
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 

@@ -49,17 +49,14 @@ function LRUQueue(max, comparer) {
       return;
     }
 
-    if (queue.length < max) {
-      node.prev = queue.head;
-      queue.head.next = node;
-      queue.head = node;
-      queue.length += 1;
-      return;
-    }
-
     node.prev = queue.head;
     queue.head.next = node;
     queue.head = node;
+
+    if (queue.length < max) {
+      queue.length += 1;
+      return;
+    }
 
     const deQueueElem = queue.tail;
     queue.tail = queue.tail.next;
