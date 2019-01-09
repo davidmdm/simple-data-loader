@@ -55,10 +55,7 @@ module.exports = function dataloader(fn, opts = {}) {
     return del(cache, keys);
   };
 
-  const loader = (...args) => {
-    const fnArgs = sanitizeArgs(args);
-    const keys = fnArgs.map(hashfn);
-
+  const load = (keys, fnArgs) => {
     if (opts.max) {
       const overflow = enqueue(keys);
       if (overflow) {
@@ -79,7 +76,7 @@ module.exports = function dataloader(fn, opts = {}) {
 
     set(cache, keys, promise);
 
-    if (opts.ttl && Number.isInteger(opts.ttl)) {
+    if (opts.ttl) {
       set(
         timeouts,
         keys,
@@ -90,6 +87,25 @@ module.exports = function dataloader(fn, opts = {}) {
       );
     }
     return promise;
+  };
+
+  const loader = (...args) => {
+    const fnArgs = sanitizeArgs(args);
+    const keys = fnArgs.map(hashfn);
+
+    if (opts.curry === true && args.length < arity) {
+      const initialKeys = keys.slice(0, args.length);
+      const curried = (...args) => {
+        if (args.length < arity) {
+          return curried.bind(null, ...args);
+        }
+        const fnArgs = args.slice(0, arity);
+        return load(initialKeys, fnArgs);
+      };
+      return curried.bind(null, ...args);
+    }
+
+    return load(keys, fnArgs);
   };
 
   loader.delete = (...args) => invalidate(sanitizeArgs(args).map(hashfn));

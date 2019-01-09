@@ -303,4 +303,34 @@ describe('dataloader', () => {
       assert.strictEqual(p1, p2);
     });
   });
+
+  describe('curried loader', () => {
+    it('should curry the execution and only care about the original curried keys', async () => {
+      const loader = dataloader((a, b, c) => a + b + c, { curry: true });
+
+      const add10 = loader(5, 5);
+      const add5plus5 = loader(5, 5);
+
+      const p1 = add10(1);
+      const p2 = add10(2);
+      const p3 = add5plus5(3);
+
+      assert.strictEqual(p1, p2);
+      assert.strictEqual(p2, p3);
+      assert.equal(await p1, 11);
+    });
+
+    it('should curry recursively', async () => {
+      const loader = dataloader((a, b, c) => a + b + c, { curry: true });
+      const addOne = loader(1);
+      const addSix = addOne(5);
+      const addSeven = addOne(7);
+
+      const p1 = addSix(5);
+      const p2 = addSeven(7); // Should return p1, since the key is simply "1"
+
+      assert.strictEqual(p1, p2);
+      assert.equal(await p1, 11);
+    });
+  });
 });
