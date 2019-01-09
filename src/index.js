@@ -102,6 +102,7 @@ module.exports = function dataloader(fn, opts = {}) {
         const fnArgs = args.slice(0, arity);
         return load(initialKeys, fnArgs);
       };
+      curried.delete = loader.delete;
       return curried.bind(null, ...args);
     }
 
