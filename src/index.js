@@ -47,6 +47,8 @@ module.exports = function dataloader(fn, opts = {}) {
   const arity = fn.length;
   const hashfn = opts.hash === true ? require('./hash') : x => x;
 
+  const onDeleteHandlers = [];
+
   const sanitizeArgs = args => {
     const result = args.slice(0, arity);
     const count = arity - result.length;
@@ -56,12 +58,16 @@ module.exports = function dataloader(fn, opts = {}) {
     return result;
   };
 
-  const invalidate = keys => {
+  const invalidate = (args, keys) => {
     if (has(timeouts, keys)) {
       clearTimeout(get(timeouts, keys));
       del(timeouts, keys);
     }
-    return del(cache, keys);
+    const deleted = del(cache, keys);
+    if (deleted) {
+      onDeleteHandlers.forEach(fn => fn(...args));
+    }
+    return deleted;
   };
 
   const resetTimeout = keys => {
@@ -87,7 +93,7 @@ module.exports = function dataloader(fn, opts = {}) {
 
       const promise = Promise.resolve()
         .then(() => fn(...args))
-        .catch(() => invalidate(keys));
+        .catch(() => invalidate(args, keys));
 
       promise.then(
         () => {
@@ -106,9 +112,9 @@ module.exports = function dataloader(fn, opts = {}) {
     const keys = fnArgs.map(hashfn);
 
     if (opts.max) {
-      const overflow = enqueue(keys);
-      if (overflow) {
-        invalidate(overflow);
+      const overflowKeys = enqueue(keys);
+      if (overflowKeys) {
+        invalidate(fnArgs, overflowKeys);
       }
     }
 
@@ -122,7 +128,7 @@ module.exports = function dataloader(fn, opts = {}) {
     const promise = Promise.resolve()
       .then(() => fn(...fnArgs))
       .catch(err => {
-        invalidate(keys);
+        invalidate(fnArgs, keys);
         return Promise.reject(err);
       });
 
@@ -132,10 +138,7 @@ module.exports = function dataloader(fn, opts = {}) {
       set(
         timeouts,
         keys,
-        setTimeout(() => {
-          del(cache, keys);
-          del(timeouts, keys);
-        }, opts.ttl)
+        setTimeout(() => invalidate(fnArgs, keys), opts.ttl)
       );
     }
 
@@ -146,7 +149,18 @@ module.exports = function dataloader(fn, opts = {}) {
     return promise;
   };
 
-  loader.delete = (...args) => invalidate(sanitizeArgs(args).map(hashfn));
+  loader.delete = (...args) => {
+    const fnArgs = sanitizeArgs(args);
+    const keys = fnArgs.map(hashfn);
+    return invalidate(fnArgs, keys);
+  };
+
+  loader.onDelete = fn => {
+    if (typeof fn !== 'function') {
+      throw new TypeError('onDelete expects a function as argument');
+    }
+    onDeleteHandlers.push(fn);
+  };
 
   return loader;
 };

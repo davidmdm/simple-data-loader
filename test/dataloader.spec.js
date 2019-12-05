@@ -344,4 +344,21 @@ describe('dataloader', () => {
       assert.strictEqual(p1, p2);
     });
   });
+
+  describe('onDelete', async () => {
+    it('should call onDelete function key is invalidated', async () => {
+      let lastDeleteRanForKey = '';
+
+      const loader = dataloader(x => x);
+      loader.onDelete(key => (lastDeleteRanForKey = key));
+
+      loader.delete('value that does not exist in cache');
+      assert.equal(lastDeleteRanForKey, '');
+
+      await loader('some key');
+
+      loader.delete('some key');
+      assert.equal(lastDeleteRanForKey, 'some key');
+    });
+  });
 });

@@ -24,5 +24,6 @@ declare namespace dataloader {
   ) => {
     (...args: ArgumentsType<T>): Promise<UnwrapReturnType<T>>;
     delete: (...args: ArgumentsType<T>) => boolean;
+    onDelete: (fn: (...args: ArgumentsType<T>) => any) => void;
   };
 }
