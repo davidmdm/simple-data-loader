@@ -160,6 +160,7 @@ module.exports = function dataloader(fn, opts = {}) {
       throw new TypeError('onDelete expects a function as argument');
     }
     onDeleteHandlers.push(fn);
+    return loader;
   };
 
   return loader;
