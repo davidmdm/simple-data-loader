@@ -8,10 +8,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 describe('dataloader', () => {
   describe('initialization via options object', () => {
     it('should create a function loader via options object', async () => {
-      const loader = dataloader({
-        load: () => Math.random(),
-        ttl: 100,
-      });
+      const loader = dataloader(() => Math.random(), { ttl: 100 });
 
       const p1 = loader();
       const p2 = loader();
@@ -279,6 +276,50 @@ describe('dataloader', () => {
       const p2 = loader(1);
 
       assert.strictEqual(p1, p2);
+    });
+  });
+
+  describe('rolling option', () => {
+    const loader = dataloader(x => x, { ttl: 100, rolling: true });
+    it('should reset the timeout', async () => {
+      const p1 = loader('test');
+
+      await sleep(70);
+
+      const p2 = loader('test');
+      assert.strictEqual(p1, p2);
+
+      await sleep(70);
+
+      const p3 = loader('test');
+      assert.strictEqual(p1, p3);
+
+      await sleep(110);
+
+      const p4 = loader('test');
+      assert.notStrictEqual(p1, p4);
+    });
+  });
+
+  describe('auto refresh', () => {
+    const loader = dataloader(x => x, { autoRefresh: 50 });
+    it('should refresh value in cache', async () => {
+      const p1 = loader('test');
+      const p2 = loader('test');
+
+      assert.strictEqual(p1, p2);
+
+      await sleep(60);
+
+      const p3 = loader('test');
+      assert.notStrictEqual(p1, p3);
+    });
+
+    it('should not refresh in cache but not after its been removed', async () => {
+      loader('test');
+      assert.equal(loader.delete('test'), true);
+      await sleep(60);
+      assert.equal(loader.delete('test'), false);
     });
   });
 
