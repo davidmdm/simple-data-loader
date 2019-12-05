@@ -2,7 +2,7 @@ const set = (cache, keys, result) => {
   if (keys.length <= 1) {
     return cache.set(keys[0], result);
   }
-  if (!cache.has(keys[0]) || !(cache.get(keys[0]) instanceof Map)) {
+  if (!cache.has(keys[0])) {
     cache.set(keys[0], new Map());
   }
   const nextCache = cache.get(keys[0]);
@@ -13,7 +13,7 @@ const has = (cache, keys) => {
   if (keys.length <= 1) {
     return cache.has(keys[0]);
   }
-  if (!cache.has(keys[0]) || !(cache.get(keys[0]) instanceof Map)) {
+  if (!cache.has(keys[0])) {
     return false;
   }
   const nextCache = cache.get(keys[0]);
@@ -32,7 +32,7 @@ const del = (cache, keys) => {
   if (keys.length <= 1) {
     return cache.delete(keys[0]);
   }
-  if (!cache.has(keys[0]) || !(cache.get(keys[0]) instanceof Map)) {
+  if (!cache.has(keys[0])) {
     return false;
   }
   const nextCache = cache.get(keys[0]);

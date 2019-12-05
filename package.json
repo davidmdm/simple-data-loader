@@ -1,12 +1,13 @@
 {
   "name": "simple-data-loader",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Caches function results by key for specified time or indefintiy",
   "main": "src/index.js",
   "typings": "src/index.d.ts",
   "scripts": {
     "test": "mocha ./test/dataloader.spec.js  --exit",
-    "coverage": "nyc mocha ./test/dataloader.spec.js"
+    "coverage": "nyc mocha ./test/dataloader.spec.js",
+    "pub": "npm t && npm publish"
   },
   "keywords": [
     "cache",

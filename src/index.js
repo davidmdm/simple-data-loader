@@ -87,14 +87,17 @@ module.exports = function dataloader(fn, opts = {}) {
 
       const promise = Promise.resolve()
         .then(() => fn(...args))
-        .catch(err => {
-          invalidate(keys);
-          return Promise.reject(err);
-        });
+        .catch(() => invalidate(keys));
 
-      set(cache, keys, promise);
-
-      setAutoRefresh(args, keys);
+      promise.then(
+        () => {
+          if (has(cache, keys)) {
+            set(cache, keys, promise);
+            setAutoRefresh(args, keys);
+          }
+        },
+        () => {}
+      );
     }, opts.autoRefresh);
   };
 
