@@ -301,6 +301,28 @@ describe('dataloader', () => {
     });
   });
 
+  describe('auto refresh', () => {
+    const loader = dataloader(x => x, { autoRefresh: 50 });
+    it('should refresh value in cache', async () => {
+      const p1 = loader('test');
+      const p2 = loader('test');
+
+      assert.strictEqual(p1, p2);
+
+      await sleep(60);
+
+      const p3 = loader('test');
+      assert.notStrictEqual(p1, p3);
+    });
+
+    it('should not refresh in cache but not after its been removed', async () => {
+      loader('test');
+      assert.equal(loader.delete('test'), true);
+      await sleep(60);
+      assert.equal(loader.delete('test'), false);
+    });
+  });
+
   describe('Internal - key uniqueness', () => {
     it('should differentiate when beginning arguments are the same but incomplete', async () => {
       const loader = dataloader((x, y, z) => '' + x + y + z);

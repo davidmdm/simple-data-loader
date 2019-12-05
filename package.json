@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "typings": "src/index.d.ts",
   "scripts": {
-    "test": "mocha ./test/dataloader.spec.js",
+    "test": "mocha ./test/dataloader.spec.js  --exit",
     "coverage": "nyc mocha ./test/dataloader.spec.js"
   },
   "keywords": [

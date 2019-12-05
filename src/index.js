@@ -17,6 +17,10 @@ module.exports = function dataloader(fn, opts = {}) {
     throw new TypeError(`ttl (time to live) must be a number, got ${typeof opts.ttl}`);
   }
 
+  if (opts.autoRefresh !== undefined && typeof opts.autoRefresh !== 'number') {
+    throw new TypeError(`autoRefresh must be a number, got ${typeof opts.autoRefresh}`);
+  }
+
   if (opts.rolling !== undefined && typeof opts.rolling !== 'boolean') {
     throw new TypeError('rolling must be specified as a boolean');
   }
@@ -75,6 +79,25 @@ module.exports = function dataloader(fn, opts = {}) {
     );
   };
 
+  const setAutoRefresh = (args, keys) => {
+    setTimeout(() => {
+      if (!has(cache, keys)) {
+        return;
+      }
+
+      const promise = Promise.resolve()
+        .then(() => fn(...args))
+        .catch(err => {
+          invalidate(keys);
+          return Promise.reject(err);
+        });
+
+      set(cache, keys, promise);
+
+      setAutoRefresh(args, keys);
+    }, opts.autoRefresh);
+  };
+
   const loader = (...args) => {
     const fnArgs = sanitizeArgs(args);
     const keys = fnArgs.map(hashfn);
@@ -112,6 +135,11 @@ module.exports = function dataloader(fn, opts = {}) {
         }, opts.ttl)
       );
     }
+
+    if (opts.autoRefresh) {
+      setAutoRefresh(fnArgs, keys);
+    }
+
     return promise;
   };
 

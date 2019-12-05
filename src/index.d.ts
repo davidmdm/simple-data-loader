@@ -10,6 +10,7 @@ declare namespace dataloader {
     hash?: boolean;
     max?: number;
     rolling?: boolean;
+    autoRefresh?: number;
   }
 
   type ArgumentsType<T> = T extends (...args: infer U) => any ? U : never;
