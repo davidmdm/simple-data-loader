@@ -1,6 +1,6 @@
 {
   "name": "simple-data-loader",
-  "version": "0.5.6",
+  "version": "0.7.0",
   "description": "Caches function results by key for specified time or indefintiy",
   "main": "src/index.js",
   "typings": "src/index.d.ts",
@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "mocha": "^5.2.0",
-    "nyc": "^13.1.0"
+    "nyc": "^14.1.1"
   },
   "nyc": {
     "include": [

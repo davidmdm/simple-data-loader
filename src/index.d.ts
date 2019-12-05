@@ -8,8 +8,8 @@ declare namespace dataloader {
   export interface LoaderOptions {
     ttl?: number;
     hash?: boolean;
-    load?: Function;
     max?: number;
+    rolling?: boolean;
   }
 
   type ArgumentsType<T> = T extends (...args: infer U) => any ? U : never;

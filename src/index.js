@@ -10,11 +10,15 @@ module.exports = function dataloader(fn, opts = {}) {
   }
 
   if (typeof fn !== 'function') {
-    throw new Error(`loading function must be a function, got ${typeof fn}`);
+    throw new TypeError(`loading function must be a function, got ${typeof fn}`);
   }
 
-  if (opts.ttl && typeof opts.ttl !== 'number') {
-    throw new Error(`ttl (time to live) must be a number, got ${typeof opts.ttl}`);
+  if (opts.ttl !== undefined && typeof opts.ttl !== 'number') {
+    throw new TypeError(`ttl (time to live) must be a number, got ${typeof opts.ttl}`);
+  }
+
+  if (opts.rolling !== undefined && typeof opts.rolling !== 'boolean') {
+    throw new TypeError('rolling must be specified as a boolean');
   }
 
   if (opts.max && (typeof opts.max !== 'number' || opts.max < 2)) {
@@ -23,6 +27,7 @@ module.exports = function dataloader(fn, opts = {}) {
 
   const cache = new Map();
   const timeouts = new Map();
+
   const { enqueue } = LRUQueue(opts.max, (a, b) => {
     if (a.length !== b.length) {
       return false;
@@ -55,6 +60,21 @@ module.exports = function dataloader(fn, opts = {}) {
     return del(cache, keys);
   };
 
+  const resetTimeout = keys => {
+    if (!opts.ttl) {
+      return;
+    }
+    clearTimeout(get(timeouts, keys));
+    set(
+      timeouts,
+      keys,
+      setTimeout(() => {
+        del(cache, keys);
+        del(timeouts, keys);
+      }, opts.ttl)
+    );
+  };
+
   const loader = (...args) => {
     const fnArgs = sanitizeArgs(args);
     const keys = fnArgs.map(hashfn);
@@ -67,6 +87,9 @@ module.exports = function dataloader(fn, opts = {}) {
     }
 
     if (has(cache, keys)) {
+      if (opts.rolling === true) {
+        resetTimeout(keys);
+      }
       return get(cache, keys);
     }
 
@@ -79,7 +102,7 @@ module.exports = function dataloader(fn, opts = {}) {
 
     set(cache, keys, promise);
 
-    if (opts.ttl && Number.isInteger(opts.ttl)) {
+    if (opts.ttl) {
       set(
         timeouts,
         keys,
