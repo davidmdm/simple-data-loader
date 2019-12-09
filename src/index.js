@@ -29,11 +29,8 @@ module.exports = function dataloader(fn, opts = {}) {
     throw new Error('max must be greater than 1');
   }
 
-  if (opts.onDelete) {
-    opts.onDelete = Array.isArray(opts.onDelete) ? opts.onDelete : [opts.onDelete];
-    if (opts.onDelete.some(fn => typeof fn !== 'function')) {
-      throw new TypeError('onDelete option must be a function or an array of functions');
-    }
+  if (opts.onDelete && typeof opts.onDelete !== 'function') {
+    throw new TypeError('On delete option must be a function');
   }
 
   const cache = new Map();
@@ -54,7 +51,10 @@ module.exports = function dataloader(fn, opts = {}) {
   const arity = fn.length;
   const hashfn = opts.hash === true ? require('./hash') : x => x;
 
-  const onDeleteHandlers = opts.onDelete || [];
+  const onDeleteHandlers = [];
+  if (opts.onDelete) {
+    onDeleteHandlers.push(opts.onDelete);
+  }
 
   const sanitizeArgs = args => {
     const result = args.slice(0, arity);
