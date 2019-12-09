@@ -360,5 +360,19 @@ describe('dataloader', () => {
       loader.delete('some key');
       assert.equal(lastDeleteRanForKey, 'some key');
     });
+
+    it('should onDelete should work from options object', async () => {
+      let lastDeleteRanForKey = '';
+
+      const loader = dataloader(x => x, { onDelete: key => (lastDeleteRanForKey = key) });
+
+      loader.delete('value that does not exist in cache');
+      assert.equal(lastDeleteRanForKey, '');
+
+      await loader('some key');
+
+      loader.delete('some key');
+      assert.equal(lastDeleteRanForKey, 'some key');
+    });
   });
 });
